@@ -4,10 +4,9 @@ import { Link } from 'react-router-dom'
 type Props = {
   gym: Gym
   onToggleFavorite: (id: string) => void
-  onDeleteGym: (id: string) => void
 }
 
-function GymCard({ gym, onToggleFavorite, onDeleteGym }: Props) {
+function GymCard({ gym, onToggleFavorite }: Props) {
   return (
     <Link
       className="relative block mb-4 rounded-lg shadow-md bg-white overflow-hidden transition-opacity duration-300 ease-in-out hover:opacity-90"

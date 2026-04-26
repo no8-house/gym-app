@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router-dom'
 import { useGym } from '../contexts/GymContext'
 
 const GymDetailPage = () => {
-  const { gyms, toggleFavorite, deleteGym } = useGym()
+  const { gyms, toggleFavorite } = useGym()
 
   const { id } = useParams()
   const gymDetail = gyms.find((gym) => gym.id === id)
