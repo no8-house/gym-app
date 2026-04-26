@@ -2,7 +2,7 @@ import GymCard from '../components/c-gymCard'
 import { useGym } from '../contexts/GymContext'
 
 const Home = () => {
-  const { gyms, toggleFavorite, deleteGym } = useGym()
+  const { gyms, toggleFavorite } = useGym()
 
   return (
     <div className="bg-gray-100">
@@ -11,11 +11,7 @@ const Home = () => {
         <ul className="grid grid-cols-3 gap-8">
           {gyms.map((gym) => (
             <li key={gym.id}>
-              <GymCard
-                gym={gym}
-                onToggleFavorite={toggleFavorite}
-                onDeleteGym={deleteGym}
-              />
+              <GymCard gym={gym} onToggleFavorite={toggleFavorite} />
             </li>
           ))}
         </ul>
