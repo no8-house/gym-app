@@ -1,10 +1,12 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useGym } from '../contexts/GymContext'
+import { useState } from 'react'
 
 const GymDetailPage = () => {
-  const { gyms, toggleFavorite } = useGym()
-
   const { id } = useParams()
+  const navigate = useNavigate()
+  const { gyms, toggleFavorite, user, deleteGym } = useGym()
+  const [deleteModal, setDeleteModal] = useState(false);
   const gymDetail = gyms.find((gym) => gym.id === id)
 
   if (!gymDetail) {
@@ -32,24 +34,67 @@ const GymDetailPage = () => {
               ))}
             </div>
           </div>
-          <button
-            className="flex flex-col items-center gap-1 mt-2"
-            onClick={(e) => {
-              e.preventDefault()
-              toggleFavorite(gymDetail.id)
-            }}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden>
-              <path
-                d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                fill={gymDetail.isFavorite ? 'gold' : 'rgba(92, 97, 108, 0.4)'}
-                stroke="#ffffff"
-                strokeWidth="2"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+
+          <div className="flex items-center gap-6">
+            <button
+              className="flex flex-col items-center gap-1"
+              onClick={(e) => {
+                e.preventDefault()
+                toggleFavorite(gymDetail.id)
+              }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden>
+                <path
+                  d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                  fill={gymDetail.isFavorite ? 'gold' : 'rgba(92, 97, 108, 0.4)'}
+                  stroke="#ffffff"
+                  strokeWidth="2"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+            {user?.id === gymDetail.userId && (
+              <>
+                <Link
+                  to={`/gyms/${gymDetail.id}/edit`}
+                  className="px-4 py-2 text-sm border border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors"
+                >
+                  ジム編集
+                </Link>
+                <button
+                  className="px-4 py-2 text-sm bg-red-500 border border-red-500 text-white rounded-lg hover:bg-white hover:text-red-500 transition-colors"
+                  onClick={() => setDeleteModal(true)}>
+                  ジム削除
+                </button>
+              </>
+            )}
+          </div>
         </div>
+        {deleteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-8 max-w-sm w-full mx-4">
+            <h2 className="text-lg font-bold mb-2">本当にジムを削除しますか？</h2>
+            <p className="text-gray-500 text-sm mb-6">※この操作は取り消せません。</p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setDeleteModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={() => {
+                  deleteGym(gymDetail.id)
+                  navigate('/')
+                }}
+                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              >
+                削除する
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
         {/* 画像グリッド */}
         <div className="flex gap-2 h-[480px] rounded-xl overflow-hidden">

@@ -48,6 +48,7 @@ type Gym = {
   equipment: Equipment
   facilities: Facilities
   basicInfo: BasicInfo
+  userId: string | null
 }
 
 export type { Gym }

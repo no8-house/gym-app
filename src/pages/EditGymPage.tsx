@@ -2,51 +2,24 @@ import { useState } from 'react'
 import type { Gym } from '../types'
 import { useGym } from '../contexts/GymContext'
 import { useNavigate } from 'react-router-dom'
-import { uploadImage } from '../lib/supabase'
+import { useParams } from 'react-router-dom'
 
-const AddGymPage = () => {
-  const [currentStep, setCurrentStep] = useState(1)
-  const [isDragging, setIsDragging] = useState(false)
-  const [isDraggingPhoto, setIsDraggingPhoto] = useState(false)
-  const [addData, setAddData] = useState<Gym>({
-    id: crypto.randomUUID(),
-    thumbnail: '',
-    name: '',
-    address: '',
-    isFavorite: false,
-    photos: [],
-    description: '',
-    userId: null,
-    equipment: { machines: [] },
-    facilities: {
-      shower: false,
-      locker: false,
-      parking: false,
-      bicycleParking: false,
-      openAllDay: false,
-      wifi: false,
-      tattooFriendly: false,
-      waterDispenser: false,
-      stretchArea: false,
-    },
-    basicInfo: {
-      time: '',
-      type: [],
-      sns: [],
-      access: '',
-      mapUrl: '',
-      ohp: '',
-      otherText: '',
-    },
-  })
-  const { addGym } = useGym()
+const EditGymPage = () => {
   const navigate = useNavigate()
+  const { id } = useParams()
+  const { gyms, editGym } = useGym()
+  const [currentStep, setCurrentStep] = useState(1)
+  const gymDetail = gyms.find((gym) => gym.id === id)
+  const [addData, setAddData] = useState<Gym>(gymDetail ?? ({} as Gym))
+
+  if (!gymDetail) return <p>ジムが見つかりません</p>
+
   const handleSubmit = () => {
     const mapUrl = addData.basicInfo.mapUrl.trim()
     const srcMatch = mapUrl.match(/src=["']([^"']+)["']/)
     const extractedUrl = srcMatch ? srcMatch[1] : mapUrl
 
-    addGym({
+    editGym({
       ...addData,
       basicInfo: { ...addData.basicInfo, mapUrl: extractedUrl },
     })
@@ -56,7 +29,7 @@ const AddGymPage = () => {
   return (
     <div className="bg-gray-100 min-h-screen">
       <div className="pt-32 px-10 max-w-3xl mx-auto pb-20">
-        <h1 className="text-3xl font-bold mb-10">ジム登録</h1>
+        <h1 className="text-3xl font-bold mb-10">ジム編集</h1>
 
         {/* ステップナビゲーション */}
         <div className="flex items-center mb-10">
@@ -135,71 +108,38 @@ const AddGymPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    サムネイル画像
+                    サムネイル画像URL
                   </label>
-                  {addData.thumbnail ? (
-                    <div className="w-1/3 h-auto relative">
-                      <img
-                        src={addData.thumbnail}
-                        className="w-fuff h-full object-cover rounded-lg"
-                      />
-                      <button
-                        onClick={() =>
-                          setAddData({ ...addData, thumbnail: '' })
-                        }
-                        className="absolute top-2 right-2 bg-white rounded-full w-6 h-6 flex items-center justify-center text-gray-500 hover:text-red-500 shadow"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ) : (
-                    <label
-                      className={`w-full py-2.5 border border-dashed rounded-lg text-sm transition-colors cursor-pointer text-center block ${
-                        isDragging
-                          ? 'border-red-400 text-red-500'
-                          : 'border-gray-300 text-gray-500 hover:border-red-400 hover:text-red-500'
-                      }`}
-                      onDragOver={(e) => {
-                        e.preventDefault()
-                        setIsDragging(true)
-                      }}
-                      onDragLeave={() => setIsDragging(false)}
-                      onDrop={async (e) => {
-                        e.preventDefault()
-                        setIsDragging(false)
-                        const file = e.dataTransfer.files?.[0]
-                        if (!file) return
-                        const url = await uploadImage(file)
-                        setAddData({ ...addData, thumbnail: url })
-                      }}
-                    >
-                      ＋ 画像を選択
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0]
-                          if (!file) return
-                          const url = await uploadImage(file)
-                          setAddData({ ...addData, thumbnail: url })
-                        }}
-                      />
-                    </label>
-                  )}
+                  <input
+                    type="text"
+                    value={addData.thumbnail}
+                    onChange={(e) =>
+                      setAddData({ ...addData, thumbnail: e.target.value })
+                    }
+                    placeholder="https://..."
+                    className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-red-400"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     詳細画像
                   </label>
-                  <div className="grid grid-cols-3 gap-3 mb-3">
+                  <div className="flex flex-col gap-3">
                     {addData.photos.map((photo, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={photo}
-                          className="w-full h-32 object-cover rounded-lg"
+                      <div key={index} className="flex gap-2 items-center">
+                        <input
+                          type="text"
+                          value={photo}
+                          onChange={(e) => {
+                            const photos = [...addData.photos]
+                            photos[index] = e.target.value
+                            setAddData({ ...addData, photos })
+                          }}
+                          placeholder="https://..."
+                          className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-400"
                         />
+
                         <button
                           onClick={() => {
                             const photos = addData.photos.filter(
@@ -207,54 +147,24 @@ const AddGymPage = () => {
                             )
                             setAddData({ ...addData, photos })
                           }}
-                          className="absolute top-2 right-2 bg-white rounded-full w-6 h-6 flex items-center justify-center text-gray-500 hover:text-red-500 shadow"
+                          className="text-gray-400 hover:text-red-500 transition-colors"
                         >
                           ✕
                         </button>
                       </div>
                     ))}
-                    {addData.photos.length < 4 && (
-                      <label
-                        className={`h-32 border border-dashed rounded-lg text-sm transition-colors cursor-pointer text-center flex items-center justify-center ${
-                          isDraggingPhoto
-                            ? 'border-red-400 text-red-500'
-                            : 'border-gray-300 text-gray-500 hover:border-red-400 hover:text-red-500'
-                        }`}
-                        onDragOver={(e) => {
-                          e.preventDefault()
-                          setIsDraggingPhoto(true)
-                        }}
-                        onDragLeave={() => setIsDraggingPhoto(false)}
-                        onDrop={async (e) => {
-                          e.preventDefault()
-                          setIsDraggingPhoto(false)
-                          const file = e.dataTransfer.files?.[0]
-                          if (!file) return
-                          const url = await uploadImage(file)
-                          setAddData({
-                            ...addData,
-                            photos: [...addData.photos, url],
-                          })
-                        }}
-                      >
-                        ＋ 画像を選択
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0]
-                            if (!file) return
-                            const url = await uploadImage(file)
-                            setAddData({
-                              ...addData,
-                              photos: [...addData.photos, url],
-                            })
-                          }}
-                        />
-                      </label>
-                    )}
                   </div>
+                  {addData.photos.length < 4 && (
+                    <button
+                      onClick={() => {
+                        const photos = [...addData.photos, '']
+                        setAddData({ ...addData, photos })
+                      }}
+                      className="w-full py-2.5 border border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-red-400 hover:text-red-500 transition-colors"
+                    >
+                      ＋ 写真を追加
+                    </button>
+                  )}
                 </div>
 
                 <div>
@@ -567,4 +477,4 @@ const AddGymPage = () => {
   )
 }
 
-export default AddGymPage
+export default EditGymPage
