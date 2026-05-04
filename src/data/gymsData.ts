@@ -47,6 +47,7 @@ const gymsData: Gym[] = [
       ohp: 'https://goldgym.jp',
       otherText: '初回体験無料',
     },
+    userId: null,
   },
   {
     id: '2',
@@ -96,6 +97,7 @@ const gymsData: Gym[] = [
       ohp: 'https://anytimefitness.co.jp',
       otherText: '月額会員制です。',
     },
+    userId: null,
   },
   {
     id: '3',
@@ -140,6 +142,7 @@ const gymsData: Gym[] = [
       ohp: 'https://musclegym.jp',
       otherText: 'タトゥーOKの数少ないジムです。',
     },
+    userId: null,
   },
 ]
 
